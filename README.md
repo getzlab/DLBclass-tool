@@ -34,7 +34,7 @@ Jupyter notebook for visually aided classification. There are two major steps th
 
    `cd ~/Desktop`
    
-   `git clone git@github.com:getzlab/DLBclass-tool.git .`
+   `git clone git@github.com:getzlab/DLBclass-tool.git`
    
    `cd DLBclass-tool`
    
@@ -42,12 +42,27 @@ Jupyter notebook for visually aided classification. There are two major steps th
    
    `chdir Desktop`
    
-   `git clone git@github.com:getzlab/DLBclass-tool.git .`
+   `git clone git@github.com:getzlab/DLBclass-tool.git`
    
    `chdir DLBclass-tool`
    
-3) Setup your virtual environment
+3) Setup your virtual environment. Enter the command:
 
+   `python -m venv ./venv`
+   
+4) Activate your virtual environment. Enter the command:
+
+    <b>Mac / Linux users:</b>
+    
+    `source ./venv/bin/activate`
+    
+    <b>Windows users:</b>
+    
+    `.\venv\Scripts\activate.bat`
+    
+5) Install required packages
+   
+   
 
 
 

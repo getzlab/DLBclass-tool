@@ -6,7 +6,7 @@ import src.nn as nn
 
 
 def classify_samples_winning_model(data, pMax=None, nets=None, modelname=None):
-    modelpath = '../saved_models/FINALMODEL_NN_evaluation_seeds1_100_folds5_reducedV3.2_removeN5/*'
+    modelpath = './saved_models/FINALMODEL_NN_evaluation_seeds1_100_folds5_reducedV3.2_removeN5/*'
     files = glob.glob(modelpath)
 
     if not nets:
@@ -19,15 +19,11 @@ def classify_samples_winning_model(data, pMax=None, nets=None, modelname=None):
             net.eval()
             nets.append(net)
 
-    print('loaded nets')
-
     pMax = 0.94248563
 
     pred_df = pd.DataFrame()
     i = 0
     for idx, row in data.iterrows():
-        if idx == 'DLBCL_C_D_PAIR9':
-            print('here')
         net_inputs = torch.tensor(row, dtype=torch.float)
         average_output = None
         for net in nets:

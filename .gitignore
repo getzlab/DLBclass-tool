@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+
+DLBCL-Classifier/*
+
+!DLBCL-Classifier/src_python/format_data.py
+!DLBCL-Classifier/src_python/nn.py
+!DLBCL-Classifier/src_python/classify_generic.py

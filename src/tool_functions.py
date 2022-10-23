@@ -1,7 +1,9 @@
-import src.classify_generic as cg
-import src.format_data as fd
 import pandas as pd
 import matplotlib.pyplot as plt
+import sys
+import src.classify_generic as cg
+import src.format_data as fd
+
 
 def classify_samples(gsm_file, cohort):
     output_fn = './classifications/' + cohort.replace(' ', '').strip() + '_classified_samples.tsv'

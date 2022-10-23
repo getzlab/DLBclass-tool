@@ -2,9 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="48d6ccbd-9dee-479c-80d1-548abc8c11a8" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitmodules" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/DLBCL-Classifier" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitmodules" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DLBCL-Classifier" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/old/classify_generic.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/classify_generic.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/old/format_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/format_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/old/nn.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/nn.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/old/tmp.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tmp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tool_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tool_functions.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,6 +94,11 @@
     "last_opened_file_path": "/Users/twood/Desktop/DLBCL-Classifier-Tool"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src" />
+    </key>
+  </component>
   <component name="RunManager" selected="Python.tool_functions">
     <configuration name="tmp" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="DLBCL-Classifier-Tool" />

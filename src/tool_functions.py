@@ -1,6 +1,5 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import sys
 import src.classify_generic as cg
 import src.format_data as fd
 

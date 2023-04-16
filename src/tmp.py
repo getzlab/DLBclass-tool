@@ -13,12 +13,11 @@ gsm = pd.read_csv(gsm_file, sep='\t', index_col=0)
 gsm.head()
 
 reduced_gsm = fd.construct_reduced_winning_version(gsm)
-reduced_gsm.head()
 
 classified_samples = cg.classify_samples_winning_model(reduced_gsm)
 
 
-labels = pd.read_csv('/Users/twood/Desktop/DLBCL-Classifier-Public/data_tables/confidence_tables/baseline_probabilities.connectivity_based.sensitivity_power2.tsv',
+labels = pd.read_csv('/Users/twood/Desktop/DLBCL-Classifier/data_tables/confidence_tables/baseline_probabilities.connectivity_based.sensitivity_power2.Sep_23_2022.tsv',
                     sep='\t', index_col=0)
 labels = labels[labels.index.isin(classified_samples.index)]
 labels = labels.loc[classified_samples.index]

@@ -4,6 +4,7 @@ import numpy as np
 import torch
 import src.nn as nn
 
+
 def classify_samples_winning_model(data, pMax=None, nets=None, modelname=None):
     modelpath = 'saved_models/FINALMODEL_NN_evaluation_seeds1_100_folds5_reducedV3.4_removeN5/*'
     files = glob.glob(modelpath)
@@ -18,7 +19,9 @@ def classify_samples_winning_model(data, pMax=None, nets=None, modelname=None):
             net.eval()
             nets.append(net)
 
-    print('loaded')
+    print('loaded neural networks')
+
+    print('Classifying', data.shape[0], 'samples...')
 
     pMax = 0.93856484
 
@@ -56,6 +59,7 @@ def classify_samples_winning_model(data, pMax=None, nets=None, modelname=None):
             new_arr = new_arr / sum(new_arr)
         pred_df_adjusted.loc[idx] = np.append(new_arr, [[np.max(new_arr)], [np.argmax(new_arr) + 1]])
 
+    print('Done!')
     return pred_df_adjusted
 
 

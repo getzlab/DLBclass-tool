@@ -2,7 +2,7 @@ MAF=$1
 SEG=$2
 BP=$3
 SETID="freeze_Aug14_all_248"
-SETSAMPLE="~/GoogleDrive/Lymphoma/DLBCL_relapse/DLBclass/freeze_Aug14_all.248.samples.txt"
+SETSAMPLE="../gsm/freeze_Aug14_all.248.samples.txt"
 OUTDIR="/tmp/"
 BP="/tmp/tsvcat_workflow_ea91634e-6af4-4349-ba3a-51cc0eb776c2_call-tsvcat_task_freeze_Aug14_all.dRanger_SvABA_forBP.txt"
 MAF="/tmp/tsvcat_workflow_0f5336b2-ef1a-4a94-bade-c90b74daf713_call-tsvcat_task_freeze_Aug14_all.maf_pon_filter_all_mutations.maf"
@@ -24,6 +24,6 @@ echo "python3 seg2gsm.py -i $SETID -s $SETSAMPLE -v $SEG -x $CNVBLACKLIST -a $GI
 SVGSM="/tmp/freeze_Aug14_all_248.21Aug2024.SV.GSM.tsv"
 MAFGSM="/tmp/freeze_Aug14_all_248.21Aug2024.MAF.GSM.tsv"
 CNVGSM="/tmp/freeze_Aug14_all_248.21Aug2024.CNV.GSM.tsv"
-FEATUREORDER="~/Projects/DLBCL-Classifier/data_tables/gsm/feature_order.19Aug2024X.txt"
+FEATUREORDER="../gsm/feature_order.19Aug2024.txt"
 
 python3 combine2gsm.py -i $SETID -v $SEG -v $SVGSM -m $MAFGSM -c $CNVGSM -f $FEATUREORDER -o $OUTDIR

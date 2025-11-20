@@ -113,6 +113,6 @@ GSM = GSM.round(4)
 GSM = GSM.replace(-1, 0.0)
 
 #GSM.index = GSM.index.str.upper()
-outfile = args.output_dir + args.id + '.' + TODAY + '.MAF.GSM.tsv'
+outfile = args.output_dir + "/" + args.id + '.' + TODAY + '.MAF.GSM.tsv'
 print('output :', outfile)
 GSM.to_csv(outfile, sep='\t',  index=False)

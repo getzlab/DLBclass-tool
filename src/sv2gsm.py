@@ -95,7 +95,7 @@ print("Execution time :", (end - start), "sec")
 gsm = sv_df.reset_index().copy()
 gsm = gsm.rename(columns={"index":"classifier_name"}).copy()
 
-outfile = args.output_dir + args.id + '.' + TODAY + '.SV.GSM.tsv'
+outfile = args.output_dir + "/" + args.id + '.' + TODAY + '.SV.GSM.tsv'
 print('output :')
 print( outfile)
 gsm.to_csv(outfile, sep='\t', index=False)

@@ -1,4 +1,5 @@
 import glob
+import os
 import pandas as pd
 import numpy as np
 import torch
@@ -6,7 +7,8 @@ import src.nn as nn
 
 
 def classify_samples_winning_model(data, pMax=None, nets=None, modelname=None):
-    modelpath = 'saved_models/FINALMODEL_NN_evaluation_seeds1_100_folds5_reducedV3.4_removeN5/*'
+    cur_dir = os.path.dirname(__file__)
+    modelpath = cur_dir + '/../saved_models/FINALMODEL_NN_evaluation_seeds1_100_folds5_reducedV3.4_removeN5/*'
     files = glob.glob(modelpath)
 
     if not nets:

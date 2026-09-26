@@ -16,7 +16,7 @@ parser.add_argument('-i', '--id',
                     required=True, type=str)
 parser.add_argument('-s', '--sample_set',
                     help='Sample file listing all samples\' in cohort, even w/o SV event.',
-                    required=True, type=str)
+                    required=True, type=str)                    
 parser.add_argument('-v', '--seg_file',
                     help='The seg file (CBS/IGV format) to find your samples\' CNV events.',
                     required=True, type=str)
@@ -27,7 +27,7 @@ parser.add_argument('-a', '--arm_significance_file',
                     help='CNV arm-level regions to include.',
                     required=False, type=str, default='../../data_tables/additional_gsm_inputs/DLBCL_broad_significance.19Aug2024.tsv')
 parser.add_argument('-f', '--focal_file',
-                    help='CNV foca; regions to include.',
+                    help='CNV focal regions to include.',
                     required=False, type=str,default='../../data_tables/additional_gsm_inputs/DLBCL_focal_peaks.18Aug2024.tsv')
 parser.add_argument('-o', '--output_dir',
                     help='Output directory.',
@@ -35,20 +35,43 @@ parser.add_argument('-o', '--output_dir',
 parser.add_argument('-g','--genome_build',
                     help='Genome build: hg19, hg38.',
                     required=False, type=str, default='hg19')
+parser.add_argument('-t', '--thresholds',
+                    help='Threshold for CNV events: lenient (default) or stringent. lenient: single amp=0.1, single del=-0.1, double amp=0.9, double del=-0.9; stringent: single amp=0.321, single del=-0.415, double amp=0.81, double del=-2.0',
+                    required=False, type=str, default='lenient')
 
 args = parser.parse_args()
 
 segs = pd.read_csv(args.seg_file, sep='\t')
+# standardize seg column names 
+c = segs.columns
+segs.rename(columns={c[0]: 'Sample',c[1]:'Chromosome',c[2]:'Start',c[3]:'End',c[-1]:'Segment_Mean'}, inplace=True)        
 log2CR_field = segs.columns[-1]
-segs.rename(columns={"Start.bp":"Start", "End.bp":"End"},inplace=True)
+sample_field = segs.columns[0]
+sample_set = sorted(list(set(segs[sample_field].unique())))
+if len(args.sample_set) > 0:
+    S = pd.read_csv(args.sample_set, sep="\t", header=None, index_col=0)
+    sample_set = list(S.index)
+# remove X and Y - seg2gsm file is for autosomes
+segs = segs.loc[~segs['Chromosome'].isin(['X', 'Y'])].copy(deep=True)
 
-S = pd.read_csv(args.sample_set, sep='\t', index_col=0)
-sample_set = sorted(list(S.index))
+# subset to sample_set 
+segs = segs.loc[segs['Sample'].isin(sample_set)].copy(deep=True) # reset_index()
 
-single_amp_threshold = 0.1
-single_del_threshold = -0.1
-double_amp_threshold = 0.9
-double_del_threshold = -0.9
+# Whether a segment is called gained or deleted depends on whether CN-2 exceeds one of these thresholds
+if args.thresholds == 'lenient': 
+    single_amp_threshold = 0.1
+    single_del_threshold = -0.1
+    double_amp_threshold = 0.9
+    double_del_threshold = -0.9
+elif args.thresholds == 'stringent':
+    single_amp_threshold = 0.5
+    single_del_threshold = -0.5
+    double_amp_threshold = 1.5
+    double_del_threshold = -1.5
+else: 
+    raise ValueError("Invalid value for --thresholds. Please specify 'lenient' or 'stringent'.")
+
+# arm length fraction threshold of 2 corresponds to the 50% median 
 arm_length_fraction_threshold = 2
 
 AL = pd.read_csv(args.focal_file, sep='\t')
@@ -66,32 +89,22 @@ segs.loc[:, 'length'] = segs['End'] - segs['Start']
 cnv_blacklist = pd.read_csv(args.cnv_blacklist_file, sep='\t')
 segs = mf.apply_cnv_blacklist(segs, cnv_blacklist, AL, arm_level_significance)
 
+# Segment_Mean in log2CR units
 old_seg_means = segs[log2CR_field].copy(deep=True)
-# samples in seg file:
-samples = sorted(segs['Sample'].unique())
-# check for gaps in sample_set
-if not (set(samples) == set(sample_set)):
-    print('Warning: sample in seg file not identical to input sample_set: GSM will have gaps')
-    sseg = set(samples)
-    ssegx = [x for x in sample_set if x not in sseg]
-    print(ssegx)
-
-segs['log_segment_mean'] = segs[log2CR_field].copy(deep=True)
-segs['Segment_Mean'] = np.power(2, (segs[log2CR_field] + 1)) - 2
+segs['Segment_Mean'] = segs[log2CR_field].copy(deep=True)
 
 for samp in sorted(segs['Sample'].unique()):
     sampseg = segs.loc[segs['Sample'] == samp].copy(deep=True)
     sample_median = mf.calc_region_median(sampseg, min(arm_level_significance['x1']), max(arm_level_significance['x2']), 2)
-    segs.loc[segs['Sample'] == samp, log2CR_field] = segs.loc[segs['Sample'] == samp, log2CR_field] - sample_median
+    segs.loc[segs['Sample'] == samp, 'Segment_Mean'] = segs.loc[segs['Sample'] == samp, 'Segment_Mean'] - sample_median
 
-#segs['log_segment_mean'] = segs[log2CR_field].copy(deep=True)
-#segs['Segment_Mean'] = np.power(2, (segs[log2CR_field] + 1)) - 2
+segs['log_segment_mean'] = segs['Segment_Mean'].copy(deep=True)
+segs['Segment_Mean'] = np.power(2, (segs['log_segment_mean'] + 1)) - 2
 
-BA = arm_level_significance.loc[(arm_level_significance['significant_amplification'] == 1)] #&
-#                                (arm_level_significance['amplification_cohort'].str.contains('DLBCL'))]
 
-BD = arm_level_significance.loc[(arm_level_significance['significant_deletion'] == 1)]  #&
-#                                (arm_level_significance['deletion_cohort'].str.contains('DLBCL'))]
+BA = arm_level_significance.loc[(arm_level_significance['significant_amplification'] == 1)] 
+
+BD = arm_level_significance.loc[(arm_level_significance['significant_deletion'] == 1)] 
 
 # Arm dels
 arm_del_df = pd.DataFrame(0, index=BD['arm'] + '.DEL', columns=sorted(sample_set)) #segs['Sample'].unique()))
@@ -99,8 +112,6 @@ arm_del_df = pd.DataFrame(0, index=BD['arm'] + '.DEL', columns=sorted(sample_set
 print('Arm DELs')
 for sample in arm_del_df.columns:
     for arm in BD['arm']:
-        if ((sample == 'DLBCL10925') | (sample == 'DLBCL11206') ) & (arm  == '6q'):
-            print(sample, arm)
 
         boundix = (BD['arm'] == arm)
         boundix = boundix[boundix].index
@@ -137,14 +148,9 @@ for sample in arm_del_df.columns:
 # Arm amps
 arm_amp_df = pd.DataFrame(0, index=BA['arm'] + '.AMP', columns=sorted(sample_set)) #columns=sorted(segs['Sample'].unique()))
 
-# Use loops for now just to ensure code exact replication.
-# This is VERY slow, and should be vectorized.
 print('Arm AMPs')
 for sample in arm_amp_df.columns:
     for arm in BA['arm']:
-
-        if (sample == 'DLBCL10904') & (arm  == '6p'):
-            print(sample, arm)
             
         boundix = (BA['arm'] == arm)
         boundix = boundix[boundix].index
@@ -175,17 +181,13 @@ for sample in arm_amp_df.columns:
             arm_amp_df.loc[arm + '.AMP', sample] = 2
 
 # Focals
-focal_df = pd.DataFrame(0, index=AL['Descriptor'],columns=sorted(sample_set)) # columns=sorted(segs['Sample'].unique()))
-#focal_df.insert(0, 'cohort', AL['cohort'].values)
+focal_df = pd.DataFrame(0, index=AL['Descriptor'],columns=sorted(sample_set)) 
 
 print('Focals')
-#for sample in focal_df.columns[1::]:
-i=1
+#i=1
 for sample in focal_df.columns:
-    if (i % 10) == 0:
-        print('\n',i,'.',end='')
-    print(sample, end=' ')
-    i += 1
+    #print(sample, end=' ')
+    #i += 1
 
     seg1 = segs.loc[segs['Sample'] == sample]
 
@@ -235,16 +237,41 @@ for sample in focal_df.columns:
             focal_df.loc[peak, sample] = 1
 
 focal_df.index = focal_df.index.str.replace(':', '.')
-#focal_df = focal_df.loc[focal_df['cohort'].str.contains('DLBCL')]
-# end time
+
 end = time.time()
 print("Execution time :", (end-start), "sec")
 
 scna_df = pd.concat([arm_del_df, arm_amp_df, focal_df])
-scna_df.index = scna_df.index.str.upper()
-gsm = scna_df.reset_index().copy()
-gsm = gsm.rename(columns={"index":"classifier_name"}).copy()
-# GSM.index = GSM.index.str.upper()
-outfile = args.output_dir + args.id + '.' + TODAY + '.CNV.GSM.tsv'
+scna_df = scna_df.reset_index()
+scna_df = scna_df.rename(columns={"index":"classifier_name"}).copy()
+scna_df.classifier_name = scna_df.classifier_name.str.upper()
+
+# fix wonky focal region name 
+scna_df["classifier_name"] = scna_df["classifier_name"].str.replace( "19Q13.32_1.DEL","19Q13.32.DEL")   
+
+# DLBclass CNV region lables
+CNVS = """10Q23.31.DEL 11P.AMP 11Q.AMP 11Q23.3.AMP 12P.AMP 12P13.2.DEL 
+12Q.AMP 13Q.AMP 13Q14.2.DEL 13Q34.DEL 14Q32.31.DEL 15Q15.3.DEL 16Q12.1.DEL 
+17P.DEL 17Q24.3.AMP 17Q25.1.DEL 18P.AMP 18Q.AMP 18Q21.32.AMP 18Q22.2.AMP 
+18Q23.DEL 19P13.2.DEL 19P13.3.DEL 19Q.AMP 19Q13.32.DEL 19Q13.42.AMP 
+1P13.1.DEL 1P31.1.DEL 1P36.11.DEL 1P36.32.DEL 1Q.AMP 1Q23.3.AMP 1Q32.1.AMP 
+1Q42.12.DEL 21Q.AMP 2P16.1.AMP 2Q22.2.DEL 3P.AMP 3P21.31.DEL 3Q.AMP 3Q28.AMP 
+3Q28.DEL 4Q21.22.DEL 4Q35.1.DEL 5P.AMP 5Q.AMP 6P.AMP 6P21.1.AMP 6P21.33.DEL 
+6Q.DEL 6Q14.1.DEL 6Q21.DEL 7P.AMP 7Q.AMP 7Q22.1.AMP 8Q12.1.DEL 8Q24.22.AMP 
+9P21.3.DEL 9P24.1.AMP 9Q.AMP 9Q21.13.DEL"""
+CNVS = CNVS.replace('\n', '')
+CNVS = CNVS.split(' ')
+print(*CNVS)
+idxKEEP = []
+for idx1, row in scna_df.iterrows():
+   if (row["classifier_name"] in CNVS):
+   		idxKEEP = idxKEEP + [idx1]
+scna_df = scna_df.loc[idxKEEP,:]   
+scna_df = scna_df.sort_values(by='classifier_name')
+scna_df = scna_df.reset_index(drop=True)
+
+outfile = args.output_dir + "/" + args.id + '.' + TODAY + '.CNV.GSM.tsv'
+scna_df.to_csv(outfile, sep='\t',index=False)
+print('complete')
+
 print('output :', outfile)
-gsm.to_csv(outfile, sep='\t', index=False)

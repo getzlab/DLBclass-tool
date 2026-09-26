@@ -10,7 +10,7 @@ def construct_reduced_winning_version(data, add_missing_features=False):
     if 'MYD88' in data.index:
         data = data.T
 
-    data = data.astype(float).astype(int)
+    # data = data.astype(float).astype(int)
 
     # largest 5 removed manually from the vectors below (removeN5)
     # 'X1Q.AMP', 'X5Q.AMP', 'X4Q35.1.DEL', 'X1Q23.3.AMP', 'X9Q21.13.DEL'
